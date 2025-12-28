@@ -1,4 +1,4 @@
-﻿#if _MSC_VER >= 1600
+#if _MSC_VER >= 1600
 #pragma execution_character_set("utf-8")
 #endif
 
@@ -19,7 +19,7 @@ WelcomeDialog::WelcomeDialog(UserManager* users, QWidget* parent)
     : QDialog(parent), users_(users)
 {
     setWindowTitle("登录");
-    resize(300, 200);
+    resize(300, 200); // 恢复标准大小
     initUI();
 }
 
@@ -28,8 +28,10 @@ void WelcomeDialog::initUI() {
 
     auto* formLayout = new QFormLayout();
     userEdit_ = new QLineEdit(this);
+    userEdit_->setPlaceholderText("请输入账号");
     passEdit_ = new QLineEdit(this);
     passEdit_->setEchoMode(QLineEdit::Password);
+    passEdit_->setPlaceholderText("请输入密码");
 
     formLayout->addRow("账号:", userEdit_);
     formLayout->addRow("密码:", passEdit_);
@@ -38,7 +40,7 @@ void WelcomeDialog::initUI() {
     auto* btnLayout = new QHBoxLayout();
     auto* loginBtn = new QPushButton("登录", this);
     auto* regBtn = new QPushButton("注册", this);
-
+    
     btnLayout->addWidget(loginBtn);
     btnLayout->addWidget(regBtn);
     layout->addLayout(btnLayout);
@@ -60,15 +62,14 @@ void WelcomeDialog::onLoginClicked() {
 
     auto userOpt = users_->findUser(u.toStdString());
     if (userOpt.has_value()) {
-        // 验证密码
-        // 注意：确保 User.h 里有 password() 方法
+        // 【关键】直接在此处验证密码
         if (userOpt->password() == p.toStdString()) {
             loggedUser_ = u;
-            accept(); // 关闭窗口，返回成功
+            accept(); // 验证成功，返回 Accepted
             return;
         }
     }
-
+    
     QMessageBox::warning(this, "错误", "账号或密码错误");
 }
 
@@ -88,9 +89,8 @@ void WelcomeDialog::onRegisterClicked() {
     // 默认注册为读者
     User newUser(u.toStdString(), p.toStdString(), UserRole::Reader, "新用户", "无", 3);
     if (users_->addUser(newUser)) {
-        QMessageBox::information(this, "成功", "注册成功，请登录");
-    }
-    else {
+        QMessageBox::information(this, "成功", "注册成功，请直接登录");
+    } else {
         QMessageBox::warning(this, "失败", "注册失败");
     }
 }
