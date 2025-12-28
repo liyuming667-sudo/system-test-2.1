@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #ifndef WELCOMEDIALOG_H
 #define WELCOMEDIALOG_H
 
@@ -14,10 +14,9 @@ class UserManager;
 class WelcomeDialog : public QDialog {
     Q_OBJECT
 public:
-    // 恢复：接收 UserManager 指针，用于内部验证登录
+    // 【关键】恢复接收 UserManager* 参数
     explicit WelcomeDialog(UserManager* users, QWidget* parent = nullptr);
 
-    // 获取登录成功的用户名
     std::optional<QString> loggedInUser() const;
 
 private slots:
@@ -29,7 +28,7 @@ private:
 
 private:
     UserManager* users_ = nullptr;
-
+    
     QLineEdit* userEdit_ = nullptr;
     QLineEdit* passEdit_ = nullptr;
 
