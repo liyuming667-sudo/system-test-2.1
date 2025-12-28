@@ -1,65 +1,41 @@
-﻿#include "AppController.h"
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
 
-#include <QApplication>
-
-#include "UserManager.h"
-#include "LibraryManager.h"
+#include "AppController.h"
 #include "WelcomeDialog.h"
 #include "MainWindow.h"
+#include "UserManager.h"
+#include "LibraryManager.h"
+#include "User.h" 
 
 AppController::AppController(QApplication& app)
-    : QObject(nullptr), app_(app)
+    : app_(app)
 {
+    lib_ = new LibraryManager();
     users_ = new UserManager();
-    library_ = new LibraryManager();
 }
 
 AppController::~AppController() {
-    delete mainWin_;
-    delete welcome_;
+    delete lib_;
     delete users_;
-    delete library_;
 }
 
 void AppController::run() {
-    showWelcome();
-}
-
-void AppController::showWelcome() {
-    if (mainWin_) {
-        mainWin_->close();
-        delete mainWin_;
-        mainWin_ = nullptr;
+    // 【关键】恢复传入 users_ 指针
+    WelcomeDialog dlg(users_);
+    
+    if (dlg.exec() == QDialog::Accepted) {
+        auto user = dlg.loggedInUser();
+        if (user.has_value()) {
+            currentUser_ = user.value();
+            
+            // 启动主窗口
+            auto* mw = new MainWindow(users_, lib_, currentUser_);
+            mw->setAttribute(Qt::WA_DeleteOnClose);
+            mw->show();
+        }
+    } else {
+        std::exit(0);
     }
-
-    welcome_ = new WelcomeDialog(users_);
-    int ret = welcome_->exec();
-
-    if (ret != QDialog::Accepted) {
-        app_.quit();
-        return;
-    }
-
-    auto userOpt = welcome_->loggedInUser();
-    delete welcome_;
-    welcome_ = nullptr;
-
-    if (!userOpt.has_value()) {
-        app_.quit();
-        return;
-    }
-
-    showMainWindow(*userOpt);
-}
-
-void AppController::showMainWindow(const QString& username) {
-    mainWin_ = new MainWindow(users_, library_, username);
-    QObject::connect(mainWin_, &MainWindow::logoutRequested,
-        this, &AppController::onLogout);
-    mainWin_->show();
-}
-
-
-void AppController::onLogout() {
-    showWelcome();
 }
