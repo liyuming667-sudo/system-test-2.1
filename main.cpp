@@ -1,4 +1,4 @@
-﻿#if _MSC_VER >= 1600
+#if _MSC_VER >= 1600
 #pragma execution_character_set("utf-8")
 #endif
 
@@ -8,7 +8,7 @@
 int main(int argc, char* argv[]) {
     QApplication a(argc, argv);
 
-    // 不加载任何样式表，使用系统原生外观
+    // 【关键】不设置任何 setStyleSheet，使用系统原生灰色界面
     AppController controller(a);
     controller.run();
 
